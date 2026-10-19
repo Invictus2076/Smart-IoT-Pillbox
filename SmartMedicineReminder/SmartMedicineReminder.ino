@@ -272,6 +272,57 @@ input:focus-visible{outline-offset:0;border-color:var(--focus)}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 .toast.err{background:var(--surface);color:var(--ink);border:2px solid var(--missed)}
 
+
+/* ---------- Motion ---------- */
+/* Entrance: header, hero, then cards rise in one after another */
+.top,.hero,.slot,.settings{animation:rise .7s var(--ease) both}
+.hero{animation-delay:.08s}
+.slot:nth-child(1){animation-delay:.18s}.slot:nth-child(2){animation-delay:.26s}.slot:nth-child(3){animation-delay:.34s}
+.settings{animation-delay:.42s}
+.strip li{animation:rise .6s var(--ease) both}
+.strip li:nth-child(1){animation-delay:.22s}.strip li:nth-child(2){animation-delay:.3s}.strip li:nth-child(3){animation-delay:.38s}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}}
+
+/* Hero: a slow drifting glow behind the content */
+.hero{position:relative;overflow:hidden;isolation:isolate}
+.hero::before,.hero::after{content:"";position:absolute;z-index:-1;width:70%;aspect-ratio:1;border-radius:50%;filter:blur(48px);opacity:.55;pointer-events:none}
+.hero::before{top:-40%;right:-20%;background:radial-gradient(circle,rgba(79,201,184,.55),transparent 65%);animation:drift 14s ease-in-out infinite alternate}
+.hero::after{bottom:-55%;left:-25%;background:radial-gradient(circle,rgba(120,140,255,.35),transparent 65%);animation:drift 18s ease-in-out infinite alternate-reverse}
+@keyframes drift{to{transform:translate(-18%,14%) scale(1.15)}}
+
+/* Clock: seconds roll up on every tick */
+.clock small{display:inline-block;animation:tick .45s var(--ease)}
+@keyframes tick{from{opacity:0;transform:translateY(40%)}}
+
+/* Progress: segments sweep in from the left */
+.segs i{transform-origin:left;animation:sweep .9s var(--ease) both}
+.segs i:nth-child(2){animation-delay:.12s}.segs i:nth-child(3){animation-delay:.24s}
+@keyframes sweep{from{transform:scaleX(0)}}
+.segs i[data-state=due]{animation-name:sweep,glow;animation-duration:.9s,1.8s;animation-timing-function:var(--ease),ease-in-out;animation-iteration-count:1,infinite;animation-fill-mode:both,none}
+
+/* Status badges pop in when they change; the check draws itself; the bell rings */
+.stamp{animation:pop .45s var(--ease)}
+@keyframes pop{from{transform:scale(.85);opacity:0}}
+.slot[data-state=taken] .stamp .ic,.strip [data-state=taken] .ic{stroke-dasharray:24;stroke-dashoffset:24;animation:draw .6s .15s var(--ease) forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.slot[data-state=due] .stamp .ic,.strip [data-state=due] .ic{transform-origin:50% 15%;animation:ring 2.4s ease-in-out infinite}
+@keyframes ring{0%,60%,100%{transform:rotate(0)}65%{transform:rotate(16deg)}72%{transform:rotate(-14deg)}79%{transform:rotate(10deg)}86%{transform:rotate(-6deg)}93%{transform:rotate(2deg)}}
+.slot[data-state=due]{animation-name:rise,breathe;animation-duration:.7s,2.4s;animation-timing-function:var(--ease),ease-in-out;animation-iteration-count:1,infinite;animation-fill-mode:both,none}
+@keyframes breathe{50%{box-shadow:0 0 0 2px var(--c-due),0 14px 40px -8px rgba(214,140,20,.6)}}
+
+/* Live indicator pulse */
+.conn[data-s=live] .dot{position:relative}
+.conn[data-s=live] .dot::after{content:"";position:absolute;inset:0;border-radius:50%;background:var(--live);animation:ping 2s var(--ease) infinite}
+@keyframes ping{to{transform:scale(2.6);opacity:0}}
+
+/* Touch feedback */
+.strip a{transition:background-color .15s,transform .2s var(--ease)}
+.strip a:hover{transform:translateY(-2px)}
+.btn{transition:background-color .15s,border-color .15s,opacity .15s,transform .15s var(--ease)}
+.btn:active{transform:scale(.97)}
+.setup[open] .form{animation:rise .35s var(--ease)}
+.toast.show{transition:opacity .25s var(--ease),transform .35s cubic-bezier(.2,1.4,.4,1)}
+
 @media (min-width:880px){
   .wrap{padding-left:32px;padding-right:32px}
   .tray{grid-template-columns:repeat(3,1fr)}
@@ -288,6 +339,9 @@ input:focus-visible{outline-offset:0;border-color:var(--focus)}
   .time{font-size:var(--fs-xl)}
 }
 @media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important}
+  .slot[data-state=taken] .stamp .ic,.strip [data-state=taken] .ic{stroke-dashoffset:0}
+  .strip a:hover{transform:none}
   .segs i[data-state=due]{animation:none}
   .toast,.setup summary .ic,.btn{transition:none}
 }
