@@ -13,7 +13,7 @@ IR tray sensors, an RTC clock and a 16x2 LCD.
 | **Dose window (±30 min)** | For a 12:30 dose the window is 12:00–13:00. Open the tray early (12:00–12:29) and the dose is marked **Taken** and the 12:30 alarm is skipped. Open it late (12:30–12:59) and the alarm stops. Not opened by 13:00 means **Missed**. The window is settable from 5 to 180 minutes. |
 | **Repeating alarm** | When a dose is due, the LED stays on and the buzzer rings in 40-second bursts every 5 minutes until the tray is opened or the window ends. |
 | **Test mode** | A "Test sound & sensor" button plays a compartment's beep pattern for 8 seconds. Opening that tray during the test shows **Sensor OK!** on the LCD and doesn't change the tablet count. |
-| **Live web dashboard** | Shows the clock and date, a connection indicator, each compartment's status, tray state, window, and tablets left. Inputs are pre-filled with the saved values. |
+| **Live web dashboard** | A status-first page in **English and Hindi** that follows the phone's **light/dark** setting. A summary line and a today strip show every compartment's status at a glance; each compartment shows its time, status, tablets left, dose window and tray state, with setup tucked behind a "Change" panel. Two looks under Settings: **Masala dabba** (each compartment is a steel katori showing its real tablets) and **Classic** (standard cards). Shows clear banners when the pillbox is offline or its clock fails. |
 | **Clock sync** | One button sets the RTC's date and time from your phone. |
 
 Status values: **Pending**, **Take now** (alarm active), **Taken**, **Missed**,

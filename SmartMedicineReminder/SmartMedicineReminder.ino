@@ -108,177 +108,674 @@ bool testSensorSeen = false;
 // ===================== WEB PAGE (HTML + CSS + JS) =====================
 const char index_html[] PROGMEM = R"rawliteral(
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-look="dabba">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
 <title>Smart IoT Pillbox</title>
+<script>try{var l=localStorage.getItem('look');if(l==='classic'||l==='dabba')document.documentElement.dataset.look=l;}catch(e){}</script>
 <style>
-  body{font-family:'Segoe UI',Tahoma,Verdana,sans-serif;background:#f0f4f8;margin:0;padding:16px;color:#2d3748}
-  .container{max-width:600px;margin:0 auto}
-  h1{color:#2c3e50;text-align:center;font-size:22px;margin:8px 0 16px}
-  .panel{background:#fff;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,.08);padding:16px;margin-bottom:14px}
-  .clock{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
-  .clock .t{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums}
-  .clock .d{color:#718096;font-size:14px}
-  .conn{font-size:13px;font-weight:600}
-  .conn.ok{color:#2f855a}.conn.bad{color:#c53030}
-  .card-header{display:flex;justify-content:space-between;align-items:center}
-  h3{margin:0;color:#3182ce;font-size:18px}
-  .meta{color:#718096;font-size:13px;margin:6px 0 4px}
-  .row{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
-  .row label{flex:1;min-width:140px;font-size:14px}
-  input{padding:8px;border:1px solid #cbd5e0;border-radius:6px;font-size:16px;width:110px}
-  button{background:#3182ce;color:#fff;border:none;padding:9px 14px;border-radius:6px;cursor:pointer;font-size:14px;font-weight:600}
-  button:hover{background:#2b6cb0}
-  button.ghost{background:#edf2f7;color:#2d3748}
-  button.ghost:hover{background:#e2e8f0}
-  button.wide{width:100%;margin-top:12px}
-  .badge{padding:5px 12px;border-radius:15px;font-weight:700;font-size:12px;text-transform:uppercase}
-  .s0{background:#e2e8f0;color:#4a5568}.s1{background:#c6f6d5;color:#22543d}.s2{background:#fed7d7;color:#742a2a}
-  .s3{background:#e9d8fd;color:#44337a}.sA{background:#feebc8;color:#7b341e}.sN{background:#edf2f7;color:#a0aec0}
-  .low{background:#fed7d7;color:#9b2c2c;border-radius:10px;padding:2px 8px;font-size:12px;font-weight:700;margin-left:6px}
-  .hidden{display:none}
-  #toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#2d3748;color:#fff;padding:10px 16px;border-radius:8px;font-size:14px;opacity:0;transition:opacity .3s;pointer-events:none;max-width:90%}
-  #toast.show{opacity:1}
-  #toast.err{background:#c53030}
+:root{
+  color-scheme:light dark;
+  --font:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans","Noto Sans Devanagari","Kohinoor Devanagari",sans-serif;
+  --fs-xs:.8125rem;--fs-s:.9375rem;--fs-m:1.0625rem;--fs-l:1.25rem;--fs-xl:1.5rem;--fs-2xl:2rem;--fs-3xl:2.5rem;
+  --tap:48px;--ease:cubic-bezier(.2,.7,.2,1);
+}
+/* ---- Masala dabba: brushed-steel ramp, spice katoris ---- */
+:root[data-look=dabba]{
+  --bg:#E3E7EA;--surface:#F4F6F7;--well:#D7DDE1;--rim:#AEB8BE;--hair:#C9D0D5;--ctl:#77838A;--live:#23824A;
+  --ink:#1B2226;--ink-2:#434F56;--ink-3:#566269;--on-ink:#F4F6F7;
+  --focus:#0B5CAD;--missed:#B42318;--warn:#8A4B00;--warn-bg:#F8E7C2;
+  --btn-bg:var(--ink);--btn-fg:var(--on-ink);
+  --haldi:#A86F00;--jeera:#7A4E25;--elaichi:#5C7A2E;
+  --pill:#FFFCF3;--pill-edge:rgba(20,20,20,.38);--rim-outer:#CDD4D8;--rim-lip:#B3BCC2;
+  --tray-radius:18px;
+}
+@media (prefers-color-scheme:dark){:root[data-look=dabba]{
+  --bg:#101315;--surface:#191D20;--well:#22282C;--rim:#4A545A;--hair:#2C3337;--ctl:#6E7980;--live:#46C27A;
+  --ink:#E8EDF0;--ink-2:#B9C3C9;--ink-3:#9BA6AD;--on-ink:#101315;
+  --focus:#7DB5FF;--missed:#FF8577;--warn:#F2B552;--warn-bg:#3A2A0C;
+  --haldi:#D49A1E;--jeera:#A8743F;--elaichi:#86A94A;
+  --pill:#F7F2E6;--pill-edge:rgba(0,0,0,.55);--rim-outer:#394247;--rim-lip:#2A3136;
+}}
+/* ---- Classic: standard health-app look ---- */
+:root[data-look=classic]{
+  --bg:#F2F2F7;--surface:#FFFFFF;--well:#F2F2F7;--rim:#C7C7CC;--hair:#E5E5EA;--ctl:#86868B;--live:#23824A;
+  --ink:#1C1C1E;--ink-2:#3C3C43;--ink-3:#5E5E63;--on-ink:#FFFFFF;
+  --focus:#0A66D1;--missed:#B42318;--warn:#8A4B00;--warn-bg:#FFF0D1;
+  --btn-bg:#0A66D1;--btn-fg:#FFFFFF;
+  --c-taken-bg:#E2F4E7;--c-taken:#17652F;--c-due-bg:#FFE6B0;--c-due:#6E3800;
+  --c-missed-bg:#FDE3E1;--c-missed:#A51F14;--c-up-bg:#ECEEF2;--c-up:#3C3C43;
+  --c-tom-bg:#ECE8FB;--c-tom:#4B3A9E;
+}
+@media (prefers-color-scheme:dark){:root[data-look=classic]{
+  --bg:#0E0F11;--surface:#1C1C1E;--well:#2C2C2E;--rim:#55555A;--hair:#38383A;--ctl:#737378;--live:#46C27A;
+  --ink:#F2F2F7;--ink-2:#D1D1D6;--ink-3:#A8A8AE;--on-ink:#0E0F11;
+  --focus:#5AA2FF;--missed:#FF8A80;--warn:#FFC864;--warn-bg:#3D2C0A;
+  --btn-bg:#5AA2FF;--btn-fg:#0E0F11;
+  --c-taken-bg:#163A22;--c-taken:#8BE3A9;--c-due-bg:#40300A;--c-due:#FFD27A;
+  --c-missed-bg:#45191A;--c-missed:#FF9A91;--c-up-bg:#2C2C2E;--c-up:#D1D1D6;
+  --c-tom-bg:#2B2448;--c-tom:#CEC2FF;
+}}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 var(--fs-m)/1.5 var(--font);caret-color:var(--focus);
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) calc(env(safe-area-inset-bottom) + 88px) env(safe-area-inset-left)}
+::selection{background:var(--focus);color:var(--on-ink)}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+h1,h2,h3,p,ul,ol{margin:0}
+ul,ol{padding:0;list-style:none}
+[lang=hi]{line-height:1.6}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.ic{width:1.15em;height:1.15em;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.num{font-variant-numeric:tabular-nums}
+.wrap{max-width:1080px;margin:0 auto;padding:0 16px}
+
+/* Header */
+.top{padding-top:20px;padding-bottom:8px}
+.brandrow{display:flex;justify-content:space-between;align-items:center;gap:12px}
+h1{font-size:1.375rem;font-weight:700;letter-spacing:-.005em;line-height:1.2}
+.conn{display:inline-flex;align-items:center;gap:8px;font-size:var(--fs-s);font-weight:600;color:var(--ink-2)}
+.conn .dot{width:10px;height:10px;border-radius:50%;background:var(--ink-3)}
+.conn[data-s=live] .dot{background:var(--live)}
+.conn[data-s=off]{color:var(--missed)}
+.conn[data-s=off] .dot{background:var(--missed)}
+.clockrow{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 16px;margin-top:12px}
+.clock{display:inline-block;font-size:var(--fs-3xl);font-weight:650;line-height:1.05;letter-spacing:-.01em}
+.clock small{font-size:.5em;font-weight:600;color:var(--ink-2);margin-left:2px}
+.date{font-size:var(--fs-s);color:var(--ink-2)}
+
+/* Banner */
+.banner{display:flex;gap:12px;align-items:flex-start;margin-top:12px;padding:12px 16px;border:2px solid var(--missed);border-radius:12px;background:var(--surface)}
+.banner .ic{color:var(--missed);margin-top:3px}
+.banner b{display:block}
+.banner [lang=hi]{display:block;color:var(--ink-2);font-size:var(--fs-s)}
+.banner .ago{display:block;font-size:var(--fs-s);color:var(--ink-2);margin-top:4px}
+.banner[hidden]{display:none}
+
+/* Today summary */
+.summary{margin:20px 0 12px;font-size:var(--fs-xl)}
+.summary .en{display:block;font-size:1em;font-weight:650;line-height:1.3}
+.summary .hint{display:block;font-size:var(--fs-s);font-weight:500;color:var(--ink-2);margin-top:4px}
+.summary [lang=hi]{display:block;font-size:var(--fs-m);font-weight:500;color:var(--ink-2);margin-top:2px}
+
+
+/* Today strip: all three statuses in the first phone viewport */
+.strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,5.5rem),1fr));gap:8px;margin-bottom:16px}
+.strip a{display:block;overflow-wrap:break-word;min-height:var(--tap);padding:8px 10px;border:1.5px solid var(--rim);border-radius:10px;color:var(--ink);text-decoration:none;background:var(--surface)}
+.strip a:hover{border-color:var(--ink-2)}
+.strip .s-top{display:flex;flex-wrap:wrap;align-items:center;gap:0 6px;font-weight:650}
+.strip .s-top i{width:9px;height:9px;border-radius:50%;background:var(--spice,var(--ink-3));flex:none}
+.strip .s-st{display:flex;align-items:center;gap:4px;font-size:var(--fs-xs);font-weight:650;color:var(--ink-2);margin-top:2px}
+.strip [lang=hi]{display:block;font-size:var(--fs-xs);font-weight:500;color:var(--ink-2)}
+.strip [data-state=due] a{background:var(--ink);border-color:var(--ink);color:var(--on-ink)}
+.strip [data-state=due] .s-st,.strip [data-state=due] [lang=hi]{color:var(--on-ink)}
+.strip [data-state=taken] a{border-color:var(--ink)}
+.strip [data-state=taken] .s-st{color:var(--ink)}
+.strip [data-state=missed] a{border-color:var(--missed)}
+.strip [data-state=missed] .s-st{color:var(--missed)}
+.strip [data-state=early] a,.strip [data-state=tomorrow] a{border-style:dashed}
+[data-look=dabba] .strip li:nth-child(1){--spice:var(--haldi)}
+[data-look=dabba] .strip li:nth-child(2){--spice:var(--jeera)}
+[data-look=dabba] .strip li:nth-child(3){--spice:var(--elaichi)}
+[data-look=classic] .strip a{border:0;border-radius:12px;box-shadow:0 1px 2px rgba(0,0,0,.06),0 2px 8px rgba(0,0,0,.04)}
+[data-look=classic] .strip [data-state=due] a{background:var(--c-due-bg);color:var(--c-due)}
+[data-look=classic] .strip [data-state=due] .s-st,[data-look=classic] .strip [data-state=due] [lang=hi]{color:var(--c-due)}
+[data-look=classic] .strip [data-state=taken] a{background:var(--c-taken-bg)}
+[data-look=classic] .strip [data-state=taken] .s-st{color:var(--c-taken)}
+[data-look=classic] .strip [data-state=missed] a{background:var(--c-missed-bg)}
+[data-look=classic] .strip [data-state=missed] .s-st{color:var(--c-missed)}
+[data-look=classic] .strip [data-state=early] a{background:var(--c-due-bg)}
+[data-look=classic] .strip [data-state=early] .s-st,[data-look=classic] .strip [data-state=early] [lang=hi]{color:var(--c-due)}
+.slot{scroll-margin-top:12px}
+
+/* Compartments */
+.tray{display:grid;gap:12px}
+.slot{display:grid;grid-template-columns:96px 1fr;gap:4px 16px;padding:16px;align-items:start}
+.bowl{grid-row:span 1;width:96px}
+.bowl svg{display:block;width:100%;height:auto}
+.info{min-width:0}
+.head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+h3{font-size:1.125rem;font-weight:650}
+h3 [lang=hi]{font-weight:500;color:var(--ink-3);margin-left:4px;white-space:nowrap}
+.pips{display:inline-flex;gap:4px;padding:6px 0}
+.pips i{width:8px;height:8px;border-radius:50%;background:var(--spice,var(--ink-3))}
+.when{display:flex;align-items:baseline;flex-wrap:wrap;gap:0 10px;margin-top:2px}
+.time{font-size:var(--fs-2xl);font-weight:650;line-height:1.15}
+.part{font-size:var(--fs-s);color:var(--ink-2)}
+.stamp{display:inline-flex;flex-wrap:wrap;max-width:100%;align-items:center;gap:0 6px;margin-top:8px;padding:5px 12px;border:2px solid var(--rim);border-radius:6px;color:var(--ink-2);font-weight:700;font-size:var(--fs-s)}
+.stamp [lang=hi]{font-weight:500}
+.facts{display:flex;flex-wrap:wrap;gap:2px 16px;margin-top:10px;font-size:var(--fs-s);line-height:1.45;color:var(--ink-2)}
+.facts li:empty{display:none}
+.facts b{color:var(--ink);font-weight:650}
+.tag{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:999px;background:var(--warn-bg);color:var(--warn);font-weight:650;font-size:var(--fs-xs)}
+
+/* States */
+.slot[data-state=loading] .stamp,.slot[data-state=unset] .stamp{color:var(--ink-3)}
+.slot[data-state=early] .stamp{border-style:dashed;border-color:var(--ink-2);color:var(--ink)}
+.slot[data-state=due] .stamp{background:var(--ink);border-color:var(--ink);color:var(--on-ink)}
+.slot[data-state=taken] .stamp{border-color:var(--ink);color:var(--ink)}
+.slot[data-state=missed] .stamp{border-color:var(--missed);color:var(--missed)}
+.slot[data-state=missed] .time{text-decoration:line-through;text-decoration-color:var(--missed);text-decoration-thickness:3px}
+.slot[data-state=tomorrow] .stamp{border-style:dashed}
+.slot[data-state=unset] .time,.slot[data-state=loading] .time{color:var(--ink-3)}
+
+/* Setup disclosure */
+.setup{grid-column:1/-1;margin-top:8px;border-top:1px solid var(--hair)}
+.setup summary{display:flex;align-items:center;gap:8px;min-height:var(--tap);cursor:pointer;font-weight:650;list-style:none;color:var(--ink)}
+.setup summary::-webkit-details-marker{display:none}
+.setup summary .ic{transition:transform .2s var(--ease)}
+.setup[open] summary .ic{transform:rotate(90deg)}
+.setup summary [lang=hi]{font-weight:500;color:var(--ink-2)}
+.form{display:grid;gap:16px;padding:4px 0 8px}
+.field label{display:block;font-size:var(--fs-s);font-weight:650;margin-bottom:6px}
+.field label [lang=hi]{font-weight:500;color:var(--ink-2);margin-left:4px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.row.split{justify-content:space-between;gap:12px;margin-top:4px}
+input[type=time],input[type=number]{min-height:var(--tap);min-width:0;width:9.5rem;padding:8px 12px;border:1.5px solid var(--ctl);border-radius:10px;background:var(--surface);color:var(--ink);font:inherit;font-variant-numeric:tabular-nums}
+input:hover{border-color:var(--ink-2)}
+input:focus-visible{outline-offset:0;border-color:var(--focus)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:var(--tap);padding:0 18px;border:1.5px solid var(--rim);border-radius:10px;background:transparent;color:var(--ink);font:inherit;font-weight:650;cursor:pointer;transition:background-color .15s,border-color .15s,opacity .15s}
+.btn:hover{border-color:var(--ink-2)}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--btn-bg);border-color:var(--btn-bg);color:var(--btn-fg)}
+.btn.primary:hover{opacity:.9}
+.btn.danger{border-color:var(--missed);color:var(--missed)}
+.btn.danger[data-armed]{background:var(--missed);color:var(--surface)}
+.btn[aria-busy=true]{opacity:.6;cursor:progress}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.stepper{display:inline-flex;align-items:center;gap:0}
+.stepper .btn{min-width:var(--tap);padding:0;font-size:var(--fs-l);border-color:var(--ctl)}
+.stepper .btn:first-child{border-radius:10px 0 0 10px}
+.stepper .btn:last-child{border-radius:0 10px 10px 0}
+.stepper input{width:5.5rem;border-radius:0;border-left:0;border-right:0;text-align:center}
+
+/* Settings */
+.settings{margin-top:32px}
+.settings h2{font-size:1.375rem;font-weight:650;margin-bottom:12px}
+.settings h2 [lang=hi]{font-weight:500;color:var(--ink-2);margin-left:6px}
+.sgrid{display:grid;gap:12px}
+.panel{padding:16px}
+.panel h3{margin-bottom:4px}
+.panel p{font-size:var(--fs-s);color:var(--ink-2);margin-bottom:12px}
+.panel p [lang=hi]{display:block}
+.drift{color:var(--warn)!important;font-weight:650}
+.looks{display:grid;gap:8px;border:0;padding:0;margin:0}
+.looks label{display:flex;align-items:center;gap:12px;min-height:var(--tap);padding:8px 12px;border:1.5px solid var(--ctl);border-radius:10px;cursor:pointer;font-weight:600}
+.looks label:has(input:checked){border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.looks input{width:20px;height:20px;accent-color:var(--focus);margin:0}
+.looks [lang=hi]{font-weight:500;color:var(--ink-2)}
+
+/* Toast */
+.toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translate(-50%,8px);width:max-content;max-width:min(560px,calc(100% - 32px));padding:12px 16px;border-radius:12px;background:var(--ink);color:var(--on-ink);font-weight:600;opacity:0;pointer-events:none;transition:opacity .18s var(--ease),transform .18s var(--ease);box-shadow:0 6px 20px rgba(0,0,0,.18)}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.toast.err{background:var(--surface);color:var(--ink);border:2px solid var(--missed)}
+.toast [lang=hi]{display:block;font-weight:500;opacity:.9}
+
+/* ---- Dabba look: one steel tray, katoris, hairline seams ---- */
+[data-look=dabba] .tray{gap:0;background:var(--surface);border:1px solid var(--hair);border-radius:var(--tray-radius);overflow:hidden}
+[data-look=dabba] .slot+.slot{border-top:1px solid var(--hair)}
+[data-look=dabba] .panel{background:var(--surface);border:1px solid var(--hair);border-radius:var(--tray-radius)}
+[data-look=dabba] .slot[data-spice=haldi]{--spice:var(--haldi)}
+[data-look=dabba] .slot[data-spice=jeera]{--spice:var(--jeera)}
+[data-look=dabba] .slot[data-spice=elaichi]{--spice:var(--elaichi)}
+.b-rim{fill:var(--rim-outer)}.b-lip{fill:var(--rim-lip)}
+.b-fill{fill:var(--spice)}
+.b-empty{fill:var(--well);stroke:var(--rim);stroke-width:1;stroke-dasharray:3 3}
+.b-pill{fill:var(--pill);stroke:var(--pill-edge);stroke-width:.7}
+.b-pill.out{animation:pillout .28s var(--ease) forwards}
+.b-ring{fill:none;stroke:transparent;stroke-width:3.5}
+.slot[data-state=due] .b-ring{stroke:var(--ink);animation:pulse 1.6s ease-in-out infinite}
+@keyframes pillout{to{opacity:0}}
+@keyframes pulse{50%{stroke-opacity:.25}}
+
+/* ---- Classic look: cards and coloured chips ---- */
+[data-look=classic] .bowl{display:none}
+[data-look=classic] .slot{grid-template-columns:1fr;background:var(--surface);border-radius:16px;box-shadow:0 1px 2px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.05)}
+[data-look=classic] .panel{background:var(--surface);border-radius:16px;box-shadow:0 1px 2px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.05)}
+[data-look=classic] .stamp{border:0;border-radius:999px;padding:6px 12px;background:var(--c-up-bg);color:var(--c-up)}
+[data-look=classic] .slot[data-state=due] .stamp{background:var(--c-due-bg);color:var(--c-due)}
+[data-look=classic] .slot[data-state=early] .stamp{background:var(--c-due-bg);color:var(--c-due)}
+[data-look=classic] .slot[data-state=taken] .stamp{background:var(--c-taken-bg);color:var(--c-taken)}
+[data-look=classic] .slot[data-state=missed] .stamp{background:var(--c-missed-bg);color:var(--c-missed)}
+[data-look=classic] .slot[data-state=tomorrow] .stamp{background:var(--c-tom-bg);color:var(--c-tom)}
+[data-look=classic] .slot[data-state=due]{box-shadow:0 0 0 2px var(--c-due),0 4px 14px rgba(0,0,0,.08)}
+[data-look=classic] .looks label:has(input:checked){border-color:var(--focus);box-shadow:inset 0 0 0 1px var(--focus)}
+
+@media (min-width:880px){
+  .wrap{padding-left:32px;padding-right:32px}
+  .tray{grid-template-columns:repeat(3,1fr)}
+  .strip{display:none}
+  .slot{grid-template-columns:1fr;padding:20px}
+  .bowl{width:132px;justify-self:center;margin-bottom:8px}
+  [data-look=dabba] .slot+.slot{border-top:0;border-left:1px solid var(--hair)}
+  .sgrid{grid-template-columns:repeat(3,1fr)}
+}
+@media (max-width:479px){
+  .slot{grid-template-columns:84px 1fr;gap:4px 14px}
+  .bowl{width:84px}
+  h3{font-size:var(--fs-m)}
+}
+@media (max-width:360px){
+  .strip a{padding:8px}
+  .strip .s-top{font-size:var(--fs-s)}
+  .strip .s-st .ic{display:none}
+  .slot{grid-template-columns:72px 1fr;gap:4px 12px;padding:14px 12px}
+  .bowl{width:72px}
+  .time{font-size:var(--fs-xl)}
+}
+@media (prefers-reduced-motion:reduce){
+  .b-pill.out{animation:none}
+  .slot[data-state=due] .b-ring{animation:none;stroke-width:5}
+  .toast,.setup summary .ic,.btn{transition:none}
+}
 </style>
 </head>
 <body>
-<div class="container">
-  <h1>Smart IoT Pillbox</h1>
-  <div class="panel clock">
-    <div><div class="t" id="rtc-time">--:--:--</div><div class="d" id="rtc-date">&nbsp;</div></div>
-    <span class="conn bad" id="conn">Connecting...</span>
-  </div>
-  <div id="slots"></div>
-  <div class="panel">
-    <h3>Settings</h3>
-    <div class="row"><label>Dose window (&plusmn; minutes)</label><input type="number" id="window" min="5" max="180"><button onclick="setWindow()">Set</button></div>
-    <div class="meta">Opening a tray inside its window marks the dose Taken. Opening it before the dose time skips the alarm.</div>
-    <button class="ghost wide" onclick="syncClock()">Sync clock to this device</button>
-  </div>
-</div>
-<div id="toast"></div>
-<script>
-const SOUND = ['1 beep', '2 beeps', '3 beeps'];
-const STATUS = [['Pending','s0'], ['Taken','s1'], ['Missed','s2'], ['From tomorrow','s3']];
-const $ = id => document.getElementById(id);
-const dirty = {};
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0112 0v5l1.5 2h-15L6 16zM10 20.5a2 2 0 004 0"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24"><rect x="4" y="5.5" width="16" height="14" rx="2"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4"/></symbol>
+  <symbol id="i-minus" viewBox="0 0 24 24"><path d="M6.5 12h11"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9.5 6l6 6-6 6"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 4l9 16H3L12 4zM12 10v4.5M12 17.5v.01"/></symbol>
+</svg>
 
-function buildCards() {
-  let html = '';
-  for (let i = 1; i <= 3; i++) {
-    html += `<div class="panel">
-      <div class="card-header"><h3>Compartment ${i}</h3><span id="status-${i}" class="badge sN">Not set</span></div>
-      <div class="meta">Sound: <b>${SOUND[i-1]}</b> &middot; Tray: <span id="tray-${i}">-</span> &middot; Window: <span id="win-${i}">-</span></div>
-      <div class="row"><label>Dose time</label><input type="time" id="time-${i}"><button onclick="setReminder(${i})">Set</button><button class="ghost" onclick="clearReminder(${i})">Clear</button></div>
-      <div class="row"><label>Tablets left: <b id="count-${i}">-</b><span id="low-${i}" class="low hidden">Refill</span></label><input type="number" id="tabs-${i}" min="0" max="999"><button onclick="setTablets(${i})">Set</button></div>
-      <button class="ghost wide" onclick="testSlot(${i})">Test sound &amp; sensor</button>
-    </div>`;
-  }
-  $('slots').innerHTML = html;
-  document.querySelectorAll('input').forEach(el => el.addEventListener('input', () => { dirty[el.id] = true; }));
+<header class="wrap top">
+  <div class="brandrow">
+    <h1>Smart IoT Pillbox</h1>
+    <span class="conn" id="conn" data-s="wait" role="status"><span class="dot" aria-hidden="true"></span><span id="conn-t">Connecting…</span></span>
+  </div>
+  <div class="clockrow">
+    <p><span class="vh">Pillbox time </span><span class="clock num" id="clock">--:--</span></p>
+    <p class="date" id="date">&nbsp;</p>
+  </div>
+  <div class="banner" id="banner" role="alert" hidden>
+    <svg class="ic" aria-hidden="true"><use href="#i-alert"/></svg>
+    <div><b id="banner-en"></b><span lang="hi" id="banner-hi"></span><span class="ago" id="banner-ago"></span></div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section aria-labelledby="summary">
+    <h2 class="summary" id="summary" aria-live="polite"><span class="en">Connecting to the pillbox…</span><span lang="hi">पिलबॉक्स से जुड़ रहा है…</span></h2>
+    <ol class="strip" id="strip" aria-label="Today at a glance"></ol>
+    <ol class="tray" id="slots"></ol>
+  </section>
+
+  <section class="settings" aria-labelledby="set-h">
+    <h2 id="set-h">Settings <span lang="hi">सेटिंग्स</span></h2>
+    <div class="sgrid">
+      <div class="panel">
+        <h3><label for="window">Dose window</label> <span lang="hi">समय सीमा</span></h3>
+        <p>Opening a tray up to this many minutes before or after its time counts as taken. <span lang="hi">इतने मिनट पहले या बाद में ट्रे खोलना खुराक माना जाएगा।</span></p>
+        <div class="row">
+          <span class="stepper">
+            <button type="button" class="btn" data-step="-5" aria-label="5 minutes less">−</button>
+            <input type="number" id="window" inputmode="numeric" min="5" max="180" step="5" aria-describedby="window-unit">
+            <button type="button" class="btn" data-step="5" aria-label="5 minutes more">+</button>
+          </span>
+          <span id="window-unit" class="part">± min</span>
+          <button type="button" class="btn primary" id="save-window">Save</button>
+        </div>
+      </div>
+      <div class="panel">
+        <h3>Clock <span lang="hi">घड़ी</span></h3>
+        <p id="drift">Set the pillbox clock from this phone. <span lang="hi">इस फ़ोन से पिलबॉक्स की घड़ी मिलाएँ।</span></p>
+        <button type="button" class="btn primary" id="sync">Sync clock to this phone</button>
+      </div>
+      <div class="panel">
+        <h3 id="look-h">Look <span lang="hi">रूप</span></h3>
+        <p>Only changes how this page looks on this phone. <span lang="hi">सिर्फ़ इस फ़ोन पर दिखावट बदलेगी।</span></p>
+        <fieldset class="looks" aria-labelledby="look-h">
+          <label><input type="radio" name="look" value="dabba"> Masala dabba <span lang="hi">मसाला डिब्बा</span></label>
+          <label><input type="radio" name="look" value="classic"> Classic <span lang="hi">सादा</span></label>
+        </fieldset>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+const SPICE = ['haldi', 'jeera', 'elaichi'];
+const BEEPS = ['1 beep', '2 beeps', '3 beeps'];
+const STATES = {
+  loading:  ['Loading…', 'लोड हो रहा है', 'i-clock'],
+  unset:    ['No time set', 'समय तय नहीं', 'i-minus'],
+  upcoming: ['Upcoming', 'आने वाली', 'i-clock'],
+  early:    ['Can take now', 'अभी ले सकते हैं', 'i-clock'],
+  due:      ['Take now', 'अभी लें', 'i-bell'],
+  taken:    ['Taken', 'ली गई', 'i-check'],
+  missed:   ['Missed', 'छूट गई', 'i-x'],
+  tomorrow: ['Starts tomorrow', 'कल से', 'i-cal']
+};
+const DAYS_HI = ['रविवार', 'सोमवार', 'मंगलवार', 'बुधवार', 'गुरुवार', 'शुक्रवार', 'शनिवार'];
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
+const dirty = {};
+const last = {};          // last rendered values, to touch the DOM only on change
+let data = null, lastOk = 0, failures = 0;
+
+/* ---------- small helpers ---------- */
+const pad = n => String(n).padStart(2, '0');
+const toMin = t => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+const hhmm = m => { m = Math.max(0, Math.min(1440, m)); return pad(Math.floor(m / 60) % 24) + ':' + pad(m % 60); };
+function dayPart(h) {
+  if (h >= 4 && h < 12) return ['Morning', 'सुबह'];
+  if (h >= 12 && h < 16) return ['Afternoon', 'दोपहर'];
+  if (h >= 16 && h < 20) return ['Evening', 'शाम'];
+  return ['Night', 'रात'];
+}
+function set(el, prop, value) {           // write only when changed
+  const key = el.id + '.' + prop;
+  if (last[key] === value) return false;
+  last[key] = value;
+  el[prop] = value;
+  return true;
+}
+const bi = (en, hi) => `<span class="en">${en}</span> <span lang="hi">${hi}</span>`;
+
+/* ---------- compartments ---------- */
+function slotHTML(i) {
+  const n = i + 1;
+  return `<li class="slot" id="slot-${n}" data-spice="${SPICE[i]}" data-state="loading" aria-labelledby="h-${n}">
+  <div class="bowl" aria-hidden="true"><svg viewBox="0 0 100 100" id="bowl-${n}">${bowlSVG(0, 0)}</svg></div>
+  <div class="info">
+    <div class="head">
+      <h3 id="h-${n}">Compartment ${n} <span lang="hi">खाना ${n}</span></h3>
+      <span class="pips" title="Sound: ${BEEPS[i]}">${'<i></i>'.repeat(n)}<span class="vh">Sound: ${BEEPS[i]}</span></span>
+    </div>
+    <p class="when"><span class="time num" id="time-${n}">--:--</span><span class="part" id="part-${n}"></span></p>
+    <p class="stamp" id="stamp-${n}"><svg class="ic" aria-hidden="true"><use href="#i-clock"/></svg>${bi('Loading…', 'लोड हो रहा है')}</p>
+    <ul class="facts">
+      <li id="left-${n}"></li>
+      <li id="win-${n}"></li>
+      <li id="tray-${n}"></li>
+    </ul>
+  </div>
+  <details class="setup" id="setup-${n}">
+    <summary><svg class="ic" aria-hidden="true"><use href="#i-chev"/></svg>Change compartment ${n} <span lang="hi">बदलें</span></summary>
+    <div class="form">
+      <div class="field">
+        <label for="time-in-${n}">Dose time <span lang="hi">खुराक का समय</span></label>
+        <div class="row"><input type="time" id="time-in-${n}"><button type="button" class="btn primary" data-act="time" data-n="${n}">Save time</button></div>
+      </div>
+      <div class="field">
+        <label for="tabs-in-${n}">Tablets in compartment <span lang="hi">गोलियों की संख्या</span></label>
+        <div class="row"><input type="number" id="tabs-in-${n}" inputmode="numeric" min="0" max="999"><button type="button" class="btn primary" data-act="tabs" data-n="${n}">Save count</button></div>
+      </div>
+      <div class="row split">
+        <button type="button" class="btn" data-act="test" data-n="${n}">Test sound &amp; sensor</button>
+        <button type="button" class="btn danger" data-act="clear" data-n="${n}">Clear time</button>
+      </div>
+    </div>
+  </details>
+</li>`;
 }
 
-// Fill an input from the device, unless the user is editing it.
-function fill(id, value) {
+function stripHTML(i) {
+  const n = i + 1;
+  return `<li id="strip-${n}" data-state="loading"><a href="#slot-${n}"><span class="s-top"><i aria-hidden="true"></i><span class="vh">Compartment </span>${n} · <span class="num" id="strip-t-${n}">--:--</span></span><span class="s-st" id="strip-s-${n}">…</span><span lang="hi" id="strip-h-${n}"></span></a></li>`;
+}
+
+/* Tablets are drawn as pills in the katori, center outwards (max 36 shown). */
+const PILL_POS = [];
+[[0, 1], [12, 6], [23, 12], [33, 17]].forEach(([r, c], k) => {
+  for (let j = 0; j < c; j++) {
+    const a = (j / c) * Math.PI * 2 + k * 0.45;
+    PILL_POS.push([50 + r * Math.cos(a), 50 + r * Math.sin(a), a * 180 / Math.PI + 90]);
+  }
+});
+function bowlSVG(count, leaving) {
+  let s = '<circle class="b-rim" cx="50" cy="50" r="49"/><circle class="b-lip" cx="50" cy="50" r="45"/>';
+  s += `<circle class="${count > 0 ? 'b-fill' : 'b-empty'}" cx="50" cy="50" r="41.5"/>`;
+  const shown = Math.min(count, PILL_POS.length);
+  for (let k = 0; k < shown; k++) {
+    const [x, y, rot] = PILL_POS[k];
+    const out = k >= shown - leaving ? ' out' : '';
+    s += `<ellipse class="b-pill${out}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="5.2" ry="3.2" transform="rotate(${rot.toFixed(0)} ${x.toFixed(1)} ${y.toFixed(1)})"/>`;
+  }
+  return s + '<circle class="b-ring" cx="50" cy="50" r="47.5"/>';
+}
+function drawBowl(n, count) {
+  const svg = $('bowl-' + n), prev = last['bowl' + n];
+  if (prev === count) return;
+  last['bowl' + n] = count;
+  if (prev !== undefined && count < prev && !reduceMotion.matches && document.documentElement.dataset.look === 'dabba') {
+    svg.innerHTML = bowlSVG(prev, Math.min(prev - count, PILL_POS.length));
+    setTimeout(() => { if (last['bowl' + n] === count) svg.innerHTML = bowlSVG(count, 0); }, 300);
+  } else {
+    svg.innerHTML = bowlSVG(count, 0);
+  }
+}
+
+function slotState(s, nowMin, win) {
+  if (!s.time) return 'unset';
+  if (s.alarm) return 'due';
+  if (s.status === 1) return 'taken';
+  if (s.status === 2) return 'missed';
+  if (s.status === 3) return 'tomorrow';
+  const t = toMin(s.time);
+  if (nowMin !== null && nowMin >= Math.max(0, t - win) && nowMin < t) return 'early';
+  return 'upcoming';
+}
+
+/* ---------- render ---------- */
+function render(d) {
+  const ok = d.rtcOk;
+  const nowMin = ok ? toMin(d.time) : null;
+
+  // Header clock
+  if (ok) {
+    const [h, m, s] = d.time.split(':');
+    set($('clock'), 'innerHTML', `${h}:${m}<small>:${s}</small>`);
+    const dt = new Date(d.date + 'T' + d.time);
+    set($('date'), 'innerHTML', dt.toLocaleDateString('en-GB', {weekday: 'short', day: 'numeric', month: 'short', year: 'numeric'}) + ` · <span lang="hi">${DAYS_HI[dt.getDay()]}</span>`);
+  } else {
+    set($('clock'), 'innerHTML', '--:--');
+    set($('date'), 'innerHTML', '&nbsp;');
+  }
+  showBanner(ok ? null : 'rtc');
+
+  fill('window', d.window);
+
+  // Compartments
+  let setCount = 0, taken = 0, missed = 0, due = [], next = null;
+  d.slots.forEach((s, k) => {
+    const n = k + 1, slot = $('slot-' + n);
+    const st = slotState(s, nowMin, d.window);
+    if (s.time) {
+      setCount++;
+      if (st === 'taken') taken++;
+      if (st === 'missed') missed++;
+      if (st === 'due') due.push(n);
+      if ((st === 'upcoming' || st === 'early') && (next === null || toMin(s.time) < next.t)) next = {t: toMin(s.time), n};
+    }
+    if (slot.dataset.state !== st) { slot.dataset.state = st; $('strip-' + n).dataset.state = st; }
+
+    const [en, hi, icon] = STATES[st];
+    set($('stamp-' + n), 'innerHTML', `<svg class="ic" aria-hidden="true"><use href="#${icon}"/></svg>${bi(en, hi)}`);
+    set($('time-' + n), 'textContent', s.time || '--:--');
+    set($('strip-t-' + n), 'textContent', s.time || '--:--');
+    set($('strip-s-' + n), 'innerHTML', `<svg class="ic" aria-hidden="true"><use href="#${icon}"/></svg>${en}`);
+    set($('strip-h-' + n), 'textContent', hi);
+    const part = s.time ? dayPart(+s.time.slice(0, 2)) : null;
+    set($('part-' + n), 'innerHTML', part ? bi(part[0], part[1]) : '');
+
+    const low = s.time && s.tablets <= d.lowStock;
+    const tag = low ? ` <span class="tag">${s.tablets === 0 ? 'Empty · खाली' : 'Refill soon · जल्द भरें'}</span>` : '';
+    set($('left-' + n), 'innerHTML', (!s.time && !s.tablets) ? '' : `<b class="num">${s.tablets}</b> ${s.tablets === 1 ? 'tablet' : 'tablets'} left · <span lang="hi">${s.tablets} बाकी</span>${tag}`);
+    if (s.time) {
+      const t = toMin(s.time);
+      const range = `<span class="num">${hhmm(t - d.window)}–${hhmm(t + d.window)}</span>`;
+      set($('win-' + n), 'innerHTML', `Take ${range} · <span lang="hi">लेने का समय</span>`);
+    } else {
+      set($('win-' + n), 'innerHTML', '');
+    }
+    set($('tray-' + n), 'innerHTML', s.tray ? 'Tray open · <span lang="hi">ट्रे खुली</span>' : 'Tray closed · <span lang="hi">ट्रे बंद</span>');
+
+    drawBowl(n, s.tablets);
+    fill('time-in-' + n, s.time);
+    fill('tabs-in-' + n, s.tablets);
+  });
+
+  // Today summary
+  let en, hi;
+  if (!ok) { en = 'Pillbox clock needs attention'; hi = 'पिलबॉक्स की घड़ी ठीक करें'; }
+  else if (!setCount) { en = 'No dose times set yet'; hi = 'अभी कोई समय तय नहीं'; }
+  else if (due.length) { en = `Take compartment ${due.join(' & ')} now`; hi = `खाना ${due.join(' और ')} की खुराक अभी लें`; }
+  else {
+    en = `${taken} of ${setCount} taken today`;
+    hi = `आज ${setCount} में से ${taken} ली गईं`;
+    if (missed) { en += ` · ${missed} missed`; hi += ` · ${missed} छूट गईं`; }
+    if (next) { en += ` · next at ${hhmm(next.t)}`; hi += ` · अगली ${hhmm(next.t)} बजे`; }
+    else if (taken + missed === setCount) { en += ' · all done'; hi += ' · आज के लिए पूरा'; }
+  }
+  const hint = ok && !setCount ? '<span class="hint">Tap “Change compartment” below to add a time.</span>' : '';
+  set($('summary'), 'innerHTML', `<span class="en">${en}</span><span lang="hi">${hi}</span>${hint}`);
+
+  // Clock drift vs this phone
+  if (ok) {
+    const diff = Math.round((new Date(d.date + 'T' + d.time) - Date.now()) / 60000);
+    const p = $('drift');
+    if (Math.abs(diff) >= 2) {
+      const mins = Math.abs(diff), dir = diff < 0 ? 'behind' : 'ahead of', dirHi = diff < 0 ? 'पीछे' : 'आगे';
+      set(p, 'innerHTML', `Pillbox clock is ${mins} min ${dir} this phone. Sync it so doses ring on time. <span lang="hi">पिलबॉक्स की घड़ी ${mins} मिनट ${dirHi} है।</span>`);
+      p.classList.add('drift');
+    } else {
+      set(p, 'innerHTML', 'Pillbox clock matches this phone. <span lang="hi">घड़ी सही है।</span>');
+      p.classList.remove('drift');
+    }
+  }
+}
+
+function fill(id, value) {          // device value -> input, unless the user is editing it
   const el = $(id);
   if (!dirty[id] && document.activeElement !== el && el.value !== String(value)) el.value = value;
 }
 
-function hhmm(min) {
-  min = Math.max(0, Math.min(1440, min));
-  return String(Math.floor(min / 60) % 24).padStart(2, '0') + ':' + String(min % 60).padStart(2, '0');
+function showBanner(kind) {
+  const b = $('banner');
+  if (!kind) { if (!b.hidden) b.hidden = true; return; }
+  const msg = kind === 'off'
+    ? ['Can’t reach the pillbox. Check this phone is on the “Smart_Medicine_Reminder” Wi-Fi.', 'पिलबॉक्स से संपर्क नहीं। फ़ोन का Wi-Fi जाँचें।']
+    : ['Pillbox clock error. Check the clock (RTC) wiring, then tap “Sync clock”.', 'घड़ी में खराबी। RTC की वायरिंग जाँचें, फिर घड़ी मिलाएँ।'];
+  set($('banner-en'), 'textContent', msg[0]);
+  set($('banner-hi'), 'textContent', msg[1]);
+  set($('banner-ago'), 'textContent', kind === 'off' && data && data.rtcOk ? `Showing the last update from ${data.time}.` : '');
+  b.hidden = false;
 }
 
-function render(d) {
-  $('rtc-time').textContent = d.rtcOk ? d.time : 'RTC error';
-  $('rtc-date').textContent = d.rtcOk ? d.date : 'Check RTC wiring, then sync the clock';
-  fill('window', d.window);
-  d.slots.forEach((s, k) => {
-    const i = k + 1;
-    let label, cls;
-    if (!s.time) { label = 'Not set'; cls = 'sN'; }
-    else if (s.alarm) { label = 'Take now'; cls = 'sA'; }
-    else { [label, cls] = STATUS[s.status] || STATUS[0]; }
-    const badge = $('status-' + i);
-    badge.textContent = label;
-    badge.className = 'badge ' + cls;
-    $('tray-' + i).textContent = s.tray ? 'open' : 'closed';
-    if (s.time) {
-      const [h, m] = s.time.split(':').map(Number), t = h * 60 + m;
-      $('win-' + i).textContent = hhmm(t - d.window) + '-' + hhmm(t + d.window);
-    } else {
-      $('win-' + i).textContent = '-';
-    }
-    $('count-' + i).textContent = s.tablets;
-    $('low-' + i).classList.toggle('hidden', !s.time || s.tablets > d.lowStock);
-    fill('time-' + i, s.time);
-    fill('tabs-' + i, s.tablets);
-  });
-}
-
-function setConn(ok) {
+function setConn(state) {
   const c = $('conn');
-  c.textContent = ok ? 'Connected' : 'Offline - reconnecting';
-  c.className = 'conn ' + (ok ? 'ok' : 'bad');
+  if (c.dataset.s === state) return;
+  c.dataset.s = state;
+  $('conn-t').innerHTML = state === 'live' ? 'Live · <span lang="hi">जुड़ा है</span>' : 'Offline · <span lang="hi">संपर्क नहीं</span>';
 }
 
+/* ---------- polling ---------- */
 function poll() {
   fetch('/status', {cache: 'no-store'})
     .then(r => { if (!r.ok) throw new Error(); return r.json(); })
-    .then(d => { render(d); setConn(true); setTimeout(poll, 1000); })
-    .catch(() => { setConn(false); setTimeout(poll, 2000); });
-}
-
-let toastTimer;
-function toast(msg, err) {
-  const t = $('toast');
-  t.textContent = msg;
-  t.className = 'show' + (err ? ' err' : '');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => { t.className = ''; }, 3000);
-}
-
-function post(path, params, okMsg, doneIds) {
-  return fetch(path, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-      body: new URLSearchParams(params)
+    .then(d => {
+      data = d; lastOk = Date.now(); failures = 0;
+      setConn('live');
+      render(d);
+      setTimeout(poll, 1000);
     })
-    .then(r => r.text().then(t => { if (!r.ok) throw new Error(t || ('Error ' + r.status)); }))
-    .then(() => { (doneIds || []).forEach(id => { dirty[id] = false; }); toast(okMsg); })
-    .catch(e => toast(e instanceof TypeError ? 'Could not reach the pillbox' : e.message, true));
+    .catch(() => {
+      failures++;
+      if (failures >= 2 || !data) {
+        setConn('off'); showBanner('off');
+        if (!data) set($('summary'), 'innerHTML', '<span class="en">Waiting for the pillbox</span><span lang="hi">पिलबॉक्स का इंतज़ार</span>');
+      }
+      setTimeout(poll, 2000);
+    });
 }
 
-function setReminder(i) {
-  const v = $('time-' + i).value;
-  if (!v) return toast('Pick a time first', true);
-  post('/setReminder', {id: i, time: v}, 'Compartment ' + i + ' set to ' + v, ['time-' + i]);
-}
-function clearReminder(i) {
-  post('/setReminder', {id: i, time: 'off'}, 'Compartment ' + i + ' cleared', ['time-' + i]);
-}
-function setTablets(i) {
-  const v = $('tabs-' + i).value;
-  if (v === '') return toast('Enter a number of tablets', true);
-  post('/setTablets', {id: i, count: v}, 'Compartment ' + i + ': ' + v + ' tablets', ['tabs-' + i]);
-}
-function setWindow() {
-  const v = $('window').value;
-  post('/setWindow', {min: v}, 'Dose window set to ±' + v + ' min', ['window']);
-}
-function testSlot(i) {
-  post('/test', {id: i}, 'Testing compartment ' + i + ': listen, then open its tray');
-}
-function syncClock() {
-  const n = new Date();
-  post('/setTime', {y: n.getFullYear(), mo: n.getMonth() + 1, d: n.getDate(),
-                    h: n.getHours(), mi: n.getMinutes(), s: n.getSeconds()}, 'Clock synced');
+/* ---------- actions ---------- */
+let toastTimer;
+function toast(en, hi, err) {
+  const t = $('toast');
+  t.innerHTML = `${en}${hi ? `<span lang="hi">${hi}</span>` : ''}`;
+  t.className = 'toast show' + (err ? ' err' : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.className = 'toast' + (err ? ' err' : ''); }, err ? 5000 : 3200);
 }
 
-buildCards();
+function post(btn, path, params, done) {
+  if (btn.getAttribute('aria-busy') === 'true') return;
+  btn.setAttribute('aria-busy', 'true');
+  fetch(path, {method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'}, body: new URLSearchParams(params)})
+    .then(r => r.text().then(t => { if (!r.ok) throw new Error(t || 'Error ' + r.status); }))
+    .then(done)
+    .catch(e => e instanceof TypeError
+      ? toast('Couldn’t reach the pillbox. Nothing was changed.', 'पिलबॉक्स से संपर्क नहीं। कुछ नहीं बदला।', true)
+      : toast(e.message + '. Nothing was changed.', 'कुछ नहीं बदला।', true))
+    .finally(() => btn.removeAttribute('aria-busy'));
+}
+
+const armed = {};
+function onAction(btn) {
+  const n = +btn.dataset.n, act = btn.dataset.act;
+  if (act === 'time') {
+    const v = $('time-in-' + n).value;
+    if (!v) return toast('Pick a time first.', 'पहले समय चुनें।', true);
+    post(btn, '/setReminder', {id: n, time: v}, () => { dirty['time-in-' + n] = false; toast(`Compartment ${n} set to ${v}.`, `खाना ${n}: ${v} बजे`); });
+  } else if (act === 'tabs') {
+    const v = $('tabs-in-' + n).value.trim();
+    if (!/^\d{1,3}$/.test(v)) return toast('Enter a number from 0 to 999.', '0 से 999 के बीच संख्या लिखें।', true);
+    post(btn, '/setTablets', {id: n, count: v}, () => { dirty['tabs-in-' + n] = false; toast(`Compartment ${n}: ${v} tablets.`, `खाना ${n}: ${v} गोलियाँ`); });
+  } else if (act === 'test') {
+    post(btn, '/test', {id: n}, () => toast(`Listen for ${BEEPS[n - 1]}, then open tray ${n}.`, `${n} बीप सुनें, फिर ट्रे ${n} खोलें।`));
+  } else if (act === 'clear') {
+    // Destructive: needs a second tap within 3 seconds.
+    if (!armed[n]) {
+      armed[n] = setTimeout(() => { delete armed[n]; btn.removeAttribute('data-armed'); btn.textContent = 'Clear time'; }, 3000);
+      btn.setAttribute('data-armed', '');
+      btn.textContent = 'Tap again to clear';
+      return;
+    }
+    clearTimeout(armed[n]); delete armed[n];
+    btn.removeAttribute('data-armed'); btn.textContent = 'Clear time';
+    post(btn, '/setReminder', {id: n, time: 'off'}, () => { dirty['time-in-' + n] = false; toast(`Compartment ${n} time cleared.`, `खाना ${n} का समय हटाया।`); });
+  }
+}
+
+/* ---------- setup ---------- */
+$('slots').innerHTML = [0, 1, 2].map(slotHTML).join('');
+$('strip').innerHTML = [0, 1, 2].map(stripHTML).join('');
+document.querySelectorAll('input').forEach(el => el.addEventListener('input', () => { dirty[el.id] = true; }));
+$('slots').addEventListener('click', e => { const b = e.target.closest('button[data-act]'); if (b) onAction(b); });
+
+document.querySelectorAll('[data-step]').forEach(b => b.addEventListener('click', () => {
+  const w = $('window'), v = Math.max(5, Math.min(180, (+w.value || 30) + +b.dataset.step));
+  w.value = v; dirty.window = true;
+}));
+$('save-window').addEventListener('click', e => {
+  const v = $('window').value.trim();
+  if (!/^\d+$/.test(v) || +v < 5 || +v > 180) return toast('Window must be 5 to 180 minutes.', 'समय सीमा 5 से 180 मिनट होनी चाहिए।', true);
+  post(e.currentTarget, '/setWindow', {min: v}, () => { dirty.window = false; toast(`Dose window set to ±${v} min.`, `समय सीमा ±${v} मिनट`); });
+});
+$('sync').addEventListener('click', e => {
+  const t = new Date();
+  post(e.currentTarget, '/setTime', {y: t.getFullYear(), mo: t.getMonth() + 1, d: t.getDate(), h: t.getHours(), mi: t.getMinutes(), s: t.getSeconds()},
+    () => toast('Clock synced to this phone.', 'घड़ी मिल गई।'));
+});
+
+const look = document.documentElement.dataset.look;
+document.querySelector(`input[name=look][value=${look}]`).checked = true;
+document.querySelectorAll('input[name=look]').forEach(r => r.addEventListener('change', () => {
+  document.documentElement.dataset.look = r.value;
+  try { localStorage.setItem('look', r.value); } catch (e) {}
+}));
+
 poll();
 </script>
 </body>
