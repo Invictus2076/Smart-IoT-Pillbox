@@ -405,8 +405,8 @@ input:focus-visible{outline-offset:0;border-color:var(--focus)}
       </div>
       <div class="panel">
         <h3>Clock</h3>
-        <p id="drift">Set the pillbox clock from this phone.</p>
-        <button type="button" class="btn primary" id="sync">Sync clock to this phone</button>
+        <p id="drift">Set the pillbox clock from this device.</p>
+        <button type="button" class="btn primary" id="sync">Sync clock to this device</button>
       </div>
     </div>
   </section>
@@ -568,10 +568,10 @@ function render(d) {
     const diff = Math.round((new Date(d.date + 'T' + d.time) - Date.now()) / 60000);
     const p = $('drift');
     if (Math.abs(diff) >= 2) {
-      set(p, 'textContent', `Pillbox clock is ${Math.abs(diff)} min ${diff < 0 ? 'behind' : 'ahead of'} this phone. Sync it so doses ring on time.`);
+      set(p, 'textContent', `Pillbox clock is ${Math.abs(diff)} min ${diff < 0 ? 'behind' : 'ahead of'} this device. Sync it so doses ring on time.`);
       p.classList.add('drift');
     } else {
-      set(p, 'textContent', 'Pillbox clock matches this phone.');
+      set(p, 'textContent', 'Pillbox clock matches this device.');
       p.classList.remove('drift');
     }
   }
@@ -586,7 +586,7 @@ function showBanner(kind) {
   const b = $('banner');
   if (!kind) { if (!b.hidden) b.hidden = true; return; }
   set($('banner-t'), 'textContent', kind === 'off'
-    ? 'Can’t reach the pillbox. Check this phone is on the “Smart_Medicine_Reminder” Wi-Fi.'
+    ? 'Can’t reach the pillbox. Check this device is connected to the “Smart_Medicine_Reminder” Wi-Fi.'
     : 'Pillbox clock error. Check the clock (RTC) wiring, then tap “Sync clock”.');
   set($('banner-ago'), 'textContent', kind === 'off' && data && data.rtcOk ? `Showing the last update from ${data.time}.` : '');
   b.hidden = false;
@@ -679,7 +679,7 @@ $('save-window').addEventListener('click', e => {
 $('sync').addEventListener('click', e => {
   const t = new Date();
   post(e.currentTarget, '/setTime', {y: t.getFullYear(), mo: t.getMonth() + 1, d: t.getDate(), h: t.getHours(), mi: t.getMinutes(), s: t.getSeconds()},
-    () => toast('Clock synced to this phone.'));
+    () => toast('Clock synced to this device.'));
 });
 
 poll();
@@ -1111,7 +1111,7 @@ void setup() {
   for (int i = 0; i < 3; i++) {
     pinMode(ledPins[i], OUTPUT);
     digitalWrite(ledPins[i], LOW);
-    pinMode(irPins[i], INPUT);
+    pinMode(irPins[i], INPUT_PULLUP);  // pull-up keeps open-collector IR outputs from reading LOW all the time
   }
 
   lcd.begin(16, 2);
