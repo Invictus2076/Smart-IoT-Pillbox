@@ -32,7 +32,7 @@
 // If your IR sensor reads LOW when the tray is opened, leave this true.
 // If it reads HIGH when triggered, set it to false. Watch the Serial Monitor
 // (115200 baud) while opening a tray to see which one is correct.
-#define IR_ACTIVE_LOW true
+#define IR_ACTIVE_LOW false   // this build's sensors read HIGH when the tray is open
 
 // Set to true if you replace the DS1307 with a DS3231 (more accurate, 3.3 V).
 #define USE_DS3231 false
